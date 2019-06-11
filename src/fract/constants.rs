@@ -1,7 +1,7 @@
 use std;
 
 // a given terminal may not (probably won't) show every frame @ 60fps, but
-pub const TARGET_FPS: i32 = 60;   
+pub const TARGET_FPS: i32 = 60;
 
 // rough estimate of terminal character a/r, which we can't rly know
 pub const CHARACTER_ASPECT_RATIO: f64 = 0.4;

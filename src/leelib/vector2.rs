@@ -24,12 +24,10 @@
 
 //! Utility Class providing 2 dimensional vectors for i32, u32, and f64.
 
-
 // Lee: Changed f32 to f64
-// 		Added f64 methods
+//      Added f64 methods
 
-
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Div, Mul, Sub};
 
 /// Implementation of Vector2i
 #[repr(C)]
@@ -38,7 +36,7 @@ pub struct Vector2<T> {
     /// X coordinate of the vector.
     pub x: T,
     /// Y coordinate of the vector.
-    pub y: T
+    pub y: T,
 }
 
 /// export Vector2<i32> as Vector2i
@@ -51,37 +49,37 @@ pub type Vector2f = Vector2<f64>;
 impl<T> Vector2<T> {
     /// Build a new Vector2<T>
     pub fn new(x: T, y: T) -> Vector2<T> {
-        Vector2 {
-            x: x,
-            y: y
-        }
+        Vector2 { x: x, y: y }
     }
 }
 
 // Lee
 impl Vector2<f64> {
-
     pub fn len(&self) -> f64 {
-    	(self.x * self.x + self.y * self.y).sqrt()
+        (self.x * self.x + self.y * self.y).sqrt()
     }
-    
+
     pub fn rotate_self(&mut self, theta: f64) {
-    	let x = self.x * theta.cos() - self.y * theta.sin();
-		let y = self.x * theta.sin() + self.y * theta.cos();
-		self.x = x;
-		self.y = y;
+        let x = self.x * theta.cos() - self.y * theta.sin();
+        let y = self.x * theta.sin() + self.y * theta.cos();
+        self.x = x;
+        self.y = y;
     }
 
     pub fn rotate(point: Vector2f, theta: f64) -> Vector2f {
-    	let x = point.x * theta.cos() - point.y * theta.sin();
-		let y = point.x * theta.sin() + point.y * theta.cos();
-		Vector2 { x: x, y: y }
+        let x = point.x * theta.cos() - point.y * theta.sin();
+        let y = point.x * theta.sin() + point.y * theta.cos();
+        Vector2 { x: x, y: y }
     }
 
-    pub fn rotate_around(ref point: Vector2<f64>, ref center:Vector2<f64>, theta: f64) -> Vector2<f64> {
-    	let x = center.x + (point.x - center.x) * theta.cos() - (point.y - center.y) * theta.sin();
-		let y = center.y + (point.x - center.x) * theta.sin() + (point.y - center.y) * theta.cos();
-		Vector2::new(x, y)
+    pub fn rotate_around(
+        ref point: Vector2<f64>,
+        ref center: Vector2<f64>,
+        theta: f64,
+    ) -> Vector2<f64> {
+        let x = center.x + (point.x - center.x) * theta.cos() - (point.y - center.y) * theta.sin();
+        let y = center.y + (point.x - center.x) * theta.sin() + (point.y - center.y) * theta.cos();
+        Vector2::new(x, y)
     }
 }
 
@@ -91,7 +89,7 @@ impl<T: Add + Copy> Add<T> for Vector2<T> {
     fn add(self, rhs: T) -> Vector2<T::Output> {
         Vector2 {
             x: self.x + rhs,
-            y: self.y + rhs
+            y: self.y + rhs,
         }
     }
 }
@@ -102,7 +100,7 @@ impl<T: Sub + Copy> Sub<T> for Vector2<T> {
     fn sub(self, rhs: T) -> Vector2<T::Output> {
         Vector2 {
             x: self.x - rhs,
-            y: self.y - rhs
+            y: self.y - rhs,
         }
     }
 }
@@ -113,7 +111,7 @@ impl<T: Mul + Copy> Mul<T> for Vector2<T> {
     fn mul(self, rhs: T) -> Vector2<T::Output> {
         Vector2 {
             x: self.x * rhs,
-            y: self.y * rhs
+            y: self.y * rhs,
         }
     }
 }
@@ -124,11 +122,10 @@ impl<T: Div + Copy> Div<T> for Vector2<T> {
     fn div(self, rhs: T) -> Vector2<T::Output> {
         Vector2 {
             x: self.x / rhs,
-            y: self.y / rhs
+            y: self.y / rhs,
         }
     }
 }
-
 
 impl<T: Add> Add for Vector2<T> {
     type Output = Vector2<T::Output>;
@@ -136,7 +133,7 @@ impl<T: Add> Add for Vector2<T> {
     fn add(self, rhs: Vector2<T>) -> Vector2<T::Output> {
         Vector2 {
             x: self.x + rhs.x,
-            y: self.y + rhs.y
+            y: self.y + rhs.y,
         }
     }
 }
@@ -147,7 +144,7 @@ impl<T: Sub> Sub for Vector2<T> {
     fn sub(self, rhs: Vector2<T>) -> Vector2<T::Output> {
         Vector2 {
             x: self.x - rhs.x,
-            y: self.y - rhs.y
+            y: self.y - rhs.y,
         }
     }
 }
@@ -158,7 +155,7 @@ impl<T: Mul> Mul for Vector2<T> {
     fn mul(self, rhs: Vector2<T>) -> Vector2<T::Output> {
         Vector2 {
             x: self.x * rhs.x,
-            y: self.y * rhs.y
+            y: self.y * rhs.y,
         }
     }
 }
@@ -169,11 +166,10 @@ impl<T: Div> Div for Vector2<T> {
     fn div(self, rhs: Vector2<T>) -> Vector2<T::Output> {
         Vector2 {
             x: self.x / rhs.x,
-            y: self.y / rhs.y
+            y: self.y / rhs.y,
         }
     }
 }
-
 
 /// Utility trait to convert a Vector2 on another type
 pub trait ToVec {
@@ -193,14 +189,14 @@ impl ToVec for Vector2f {
     fn to_vector2i(&self) -> Vector2i {
         Vector2i {
             x: self.x as i32,
-            y: self.y as i32
+            y: self.y as i32,
         }
     }
 
     fn to_vector2u(&self) -> Vector2u {
         Vector2u {
             x: self.x as u32,
-            y: self.y as u32
+            y: self.y as u32,
         }
     }
 }
@@ -209,18 +205,18 @@ impl ToVec for Vector2i {
     fn to_vector2f(&self) -> Vector2f {
         Vector2f {
             x: self.x as f64,
-            y: self.y as f64
+            y: self.y as f64,
         }
     }
 
     fn to_vector2i(&self) -> Vector2i {
-         self.clone()
+        self.clone()
     }
 
     fn to_vector2u(&self) -> Vector2u {
         Vector2u {
             x: self.x as u32,
-            y: self.y as u32
+            y: self.y as u32,
         }
     }
 }
@@ -229,14 +225,14 @@ impl ToVec for Vector2u {
     fn to_vector2f(&self) -> Vector2f {
         Vector2f {
             x: self.x as f64,
-            y: self.y as f64
+            y: self.y as f64,
         }
     }
 
     fn to_vector2i(&self) -> Vector2i {
         Vector2i {
             x: self.x as i32,
-            y: self.y as i32
+            y: self.y as i32,
         }
     }
 

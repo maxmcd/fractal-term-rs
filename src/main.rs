@@ -1,8 +1,7 @@
 extern crate rustbox;
-mod leelib;
 mod fract;
-
+mod leelib;
 
 fn main() {
-	fract::main::main();
+    fract::main::main();
 }

@@ -1,5 +1,5 @@
 pub mod app;
-pub use self::app::App;  // 'flatten' namespace path
+pub use self::app::App; // 'flatten' namespace path
 
 pub mod asciifier;
 pub use self::asciifier::Asciifier;
