@@ -39,7 +39,7 @@ impl ExposureUtil {
         ExposureInfo {
             floor: range.0,
             ceil: range.1,
-            bias: bias,
+            bias,
         }
     }
 
@@ -56,9 +56,9 @@ impl ExposureUtil {
         let sum_thresh = (matrix.width() as f64 * matrix.height() as f64) * lower_thresh_ratio;
         let mut lower_index = 0;
         let mut sum = 0;
-        for i in 0..histogram.len() {
-            sum += histogram[i];
-            if sum as f64 > sum_thresh {
+        for (i, h) in histogram.iter().enumerate() {
+            sum += h;
+            if f64::from(sum) > sum_thresh {
                 lower_index = if i <= 1 {
                     0 as usize
                 } else {
@@ -73,7 +73,7 @@ impl ExposureUtil {
         let mut sum = 0;
         for i in (0..histogram.len()).rev() {
             sum += histogram[i];
-            if sum as f64 > sum_thresh {
+            if f64::from(sum) > sum_thresh {
                 upper_index = if i == histogram.len() - 1 {
                     histogram.len() - 1
                 } else if i <= 1 {
@@ -91,7 +91,7 @@ impl ExposureUtil {
     /**
      * Returns a value in range (-1, +1)
      */
-    fn calc_bias(histogram: &Vec<u16>, lower: usize, upper: usize) -> f64 {
+    fn calc_bias(histogram: &[u16], lower: usize, upper: usize) -> f64 {
         if lower == upper {
             return 0.0;
         }
@@ -106,7 +106,7 @@ impl ExposureUtil {
         // get sum of all values
         let mut sum = 0u64;
         for i in lower..(upper + 1) {
-            sum += histogram[i] as u64;
+            sum += u64::from(histogram[i]);
         }
 
         // find index at the 16%, 50%, 84%
@@ -114,7 +114,7 @@ impl ExposureUtil {
         let thresh = sum as f64 * (0.5 - 0.34);
         let mut s = 0;
         for i in lower..(upper + 1) {
-            s += histogram[i] as u64;
+            s += u64::from(histogram[i]);
             if s as f64 > thresh {
                 // is like 16th percentile; 1 standard deviation
                 i_a = i;

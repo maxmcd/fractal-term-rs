@@ -1,13 +1,11 @@
 extern crate num;
-extern crate num_cpus;
 
 use self::num::complex::{Complex, Complex64};
-use self::num::traits::Float;
+
 use leelib::matrix::Matrix;
 use leelib::vector2::Vector2f;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
-use std::thread;
 
 const DEFAULT_MANDELBROT_WIDTH: f64 = 4.0;
 const DEFAULT_JULIA_WIDTH: f64 = 4.0;
@@ -42,9 +40,9 @@ impl FractalSpecs {
             max_val: 500,
             default_width: DEFAULT_MANDELBROT_WIDTH,
             default_center: Vector2f::new(0.0, 0.0),
-            element_ar: element_ar,
-            num_threads: num_cpus::get() as usize,
-            use_multi_threads: true,
+            element_ar,
+            num_threads: 1,
+            use_multi_threads: false,
         }
     }
 
@@ -55,9 +53,9 @@ impl FractalSpecs {
             max_val: 500,
             default_width: DEFAULT_JULIA_WIDTH,
             default_center: Vector2f::new(0.0, 0.0),
-            element_ar: element_ar,
-            num_threads: num_cpus::get() as usize,
-            use_multi_threads: true,
+            element_ar,
+            num_threads: 1,
+            use_multi_threads: false,
         }
     }
 }
@@ -76,8 +74,7 @@ impl FractalCalc {
         width: f64,
     ) -> f64 {
         let matrix_aspect_ratio = matrix_width as f64 / full_matrix_height as f64;
-        let ht = width * (1.0 / matrix_aspect_ratio) * (1.0 / specs.element_ar);
-        ht
+        width * (1.0 / matrix_aspect_ratio) * (1.0 / specs.element_ar)
     }
 
     pub fn write_matrix(
@@ -87,12 +84,8 @@ impl FractalCalc {
         rotation: f64,
         matrix: &mut Matrix<u16>,
     ) {
-        if specs.use_multi_threads {
-            FractalCalc::write_matrix_mt(&specs, center, width, rotation, matrix);
-        } else {
-            let h = matrix.height();
-            FractalCalc::write_matrix_section(&specs, center, width, rotation, matrix, 0, h);
-        }
+        let h = matrix.height();
+        FractalCalc::write_matrix_section(&specs, center, width, rotation, matrix, 0, h);
     }
 
     /**
@@ -151,87 +144,6 @@ impl FractalCalc {
                 cursor.x += slope_x.x;
                 cursor.y += slope_x.y;
             }
-        }
-    }
-
-    /**
-     * Calculate the MandelUtil data in chunks handed off to separate threads
-     * Then, write the results to the passed-in matrix
-     */
-    fn write_matrix_mt(
-        specs: &FractalSpecs,
-        center: Vector2f,
-        width: f64,
-        rotation: f64,
-        matrix: &mut Matrix<u16>,
-    ) {
-        // horizontal strips which make up the final fractal data;
-        // the threads' 'work product' goes in here
-        let i = specs.num_threads;
-        let sections: Vec<Matrix<u16>> = vec![Matrix::new(1, 1); i];
-
-        // make the data shareable and mutable
-        let wrapped_data = Arc::new(Mutex::new(sections));
-
-        let (sender, receiver) = mpsc::channel::<bool>();
-
-        let step = (matrix.height() as f64 / specs.num_threads as f64).floor() as usize;
-        for i in 0..specs.num_threads {
-            let start = i as usize * step;
-            let end = if i < specs.num_threads - 1 {
-                (i + 1) as usize * step
-            } else {
-                matrix.height()
-            };
-            let section_ht = end - start;
-            // println!("i {} start {} end {} ht {}", i, start, end, section_ht);
-
-            // each thread needs its own sender instance
-            let sender = sender.clone();
-            // each thread needs its own thread-safe data reference
-            let wrapped_data = wrapped_data.clone();
-
-            // note how we clone self b/c of use of instance method
-            let spec = specs.clone();
-            let matrix_w = matrix.width();
-            let matrix_h = matrix.height();
-
-            thread::spawn(move || {
-                let mut section: Matrix<u16> = Matrix::new(matrix_w, section_ht);
-                FractalCalc::write_matrix_section(
-                    &spec,
-                    center,
-                    width,
-                    rotation,
-                    &mut section,
-                    start,
-                    matrix_h,
-                );
-
-                let mut locked_data = wrapped_data.lock().unwrap();
-                locked_data[i] = section;
-
-                let _ = sender.send(true);
-            });
-        }
-
-        let mut count = 0;
-        loop {
-            // this blocks until the channel receiver gets a message
-            let _ = receiver.recv();
-            count += 1;
-            if count == specs.num_threads {
-                break;
-            }
-        }
-
-        // copy the chunks into the passed-in matrix
-        let locked_data = wrapped_data.lock().unwrap();
-        let mut yoff: usize = 0;
-        for i in 0..locked_data.len() {
-            let section = &locked_data[i];
-            matrix.copy_from(&section, yoff);
-            yoff += section.height();
         }
     }
 

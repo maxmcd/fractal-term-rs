@@ -1,11 +1,10 @@
 extern crate time;
 use self::time::PreciseTime;
 use fract::constants;
-use fract::input;
-use fract::input::Command;
+
 use fract::App;
 use leelib::ansi;
-use std::sync::{Arc, Mutex};
+
 use std::thread;
 use std::time::Duration;
 
@@ -13,10 +12,10 @@ use std::time::Duration;
  * Manages the main program loop, and hands off `Commands` from the user-input thread
  */
 pub fn main() {
-    let command = Command::None;
-    let wrapped_command = Arc::new(Mutex::new(command));
-    let handle = input::launch_thread(wrapped_command.clone());
-    let wrapped_command = wrapped_command.clone(); // for use by main thread
+    // let command = Command::None;
+    // let wrapped_command = Arc::new(Mutex::new(command));
+    // let handle = input::launch_thread(wrapped_command.clone());
+    // let wrapped_command = wrapped_command.clone(); // for use by main thread
 
     let mut timing = Timing::new(constants::TARGET_FPS);
 
@@ -25,21 +24,21 @@ pub fn main() {
     loop {
         timing.frame_start();
 
-        {
-            let mut locked_command = wrapped_command.lock().unwrap();
-            {
-                match *locked_command {
-                    Command::None => {}
-                    Command::Quit => break, // breaks out of loop to quit program
-                    _ => {
-                        // input thread changed 'command', so handle it
-                        app.handle_command(&*locked_command);
-                        // reset command
-                        *locked_command = Command::None;
-                    }
-                }
-            }
-        }
+        // {
+        //     let mut locked_command = wrapped_command.lock().unwrap();
+        //     {
+        //         match *locked_command {
+        //             Command::None => {}
+        //             Command::Quit => break, // breaks out of loop to quit program
+        //             _ => {
+        //                 // input thread changed 'command', so handle it
+        //                 app.handle_command(&*locked_command);
+        //                 // reset command
+        //                 *locked_command = Command::None;
+        //             }
+        //         }
+        //     }
+        // }
 
         app.update();
 
@@ -55,8 +54,8 @@ pub fn main() {
     }
 
     // quit
-    print!("{}", ansi::CLEAR);
-    let _ = handle.join();
+    // print!("{}", ansi::CLEAR);
+    // let _ = handle.join();
 }
 
 /**

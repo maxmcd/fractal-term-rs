@@ -1,6 +1,6 @@
 use leelib::math;
 use leelib::matrix::Matrix;
-use std::cmp::{max, min};
+use std::cmp::{min};
 
 pub const CHARSET1: &'static str = " .,:;i1tfLCG08@";
 

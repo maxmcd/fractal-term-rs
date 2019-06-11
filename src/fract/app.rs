@@ -2,7 +2,7 @@ extern crate num;
 use self::num::complex::Complex64;
 use fract::constants;
 use fract::fractalcalc::{FractalSpecs, FractalType};
-use fract::input::Command;
+// use fract::input::Command;
 use fract::view::{JuliaView, MandelView, View, Views};
 use fract::CoordList;
 use fract::TextBuffer;
@@ -81,211 +81,211 @@ impl<'a> App<'a> {
     //		&mut self.views.get()  // wow!
     //	}
 
-    pub fn handle_command(&mut self, command: &Command) {
-        let vel_increment =
-            self.views.get().width_animator().value as f64 * constants::VELOCITY_RATIO_INCREMENT; // abstract this
+    // pub fn handle_command(&mut self, command: &Command) {
+    //     let vel_increment =
+    //         self.views.get().width_animator().value as f64 * constants::VELOCITY_RATIO_INCREMENT; // abstract this
 
-        // coord anim, start and stop
-        match self.views.get().specs().fractal_type {
-            FractalType::Mandelbrot => {
-                match *command {
-                    Command::Coord(index) => {
-                        let b = self.views.get().start_coord_anim(index);
-                        if b {
-                            self.show_feedback(
-                                format!("Starting Mandelbrot zoom {}", (index + 1)).to_string(),
-                            );
-                        }
-                    }
-                    Command::RotationalVelocity(_)
-                    | Command::AutoExposure
-                    | Command::Help
-                    | Command::Size(..) => {}
-                    _ => {
-                        // any command aside from the above turns off coord anim
-                        self.views.get().stop_coord_anim();
-                    }
-                }
-            }
-            FractalType::Julia(..) => match *command {
-                Command::Coord(index) => {
-                    let b = self.views.get().start_coord_anim(index);
-                    if b {
-                        self.show_feedback(
-                            format!("Morphing to Julia set {}", (index + 1)).to_string(),
-                        );
-                    }
-                }
-                Command::Reset | Command::Stop | Command::ChangeFractalSet => {
-                    self.views.get().stop_coord_anim();
-                }
-                _ => {}
-            },
-        }
+    //     // coord anim, start and stop
+    //     match self.views.get().specs().fractal_type {
+    //         FractalType::Mandelbrot => {
+    //             match *command {
+    //                 Command::Coord(index) => {
+    //                     let b = self.views.get().start_coord_anim(index);
+    //                     if b {
+    //                         self.show_feedback(
+    //                             format!("Starting Mandelbrot zoom {}", (index + 1)).to_string(),
+    //                         );
+    //                     }
+    //                 }
+    //                 Command::RotationalVelocity(_)
+    //                 | Command::AutoExposure
+    //                 | Command::Help
+    //                 | Command::Size(..) => {}
+    //                 _ => {
+    //                     // any command aside from the above turns off coord anim
+    //                     self.views.get().stop_coord_anim();
+    //                 }
+    //             }
+    //         }
+    //         FractalType::Julia(..) => match *command {
+    //             Command::Coord(index) => {
+    //                 let b = self.views.get().start_coord_anim(index);
+    //                 if b {
+    //                     self.show_feedback(
+    //                         format!("Morphing to Julia set {}", (index + 1)).to_string(),
+    //                     );
+    //                 }
+    //             }
+    //             Command::Reset | Command::Stop | Command::ChangeFractalSet => {
+    //                 self.views.get().stop_coord_anim();
+    //             }
+    //             _ => {}
+    //         },
+    //     }
 
-        // main command match logic
-        match *command {
-            Command::PositionVelocity(xm, ym) => {
-                let increment = Vector2f {
-                    x: vel_increment * xm,
-                    y: vel_increment * ym,
-                };
+    //     // main command match logic
+    //     match *command {
+    //         Command::PositionVelocity(xm, ym) => {
+    //             let increment = Vector2f {
+    //                 x: vel_increment * xm,
+    //                 y: vel_increment * ym,
+    //             };
 
-                match *self.views.get().position_animator().anim() {
-                    Anim::VelocityWithRotation { velocity, .. } => {
-                        self.views
-                            .get()
-                            .position_animator()
-                            .set_vwr_velocity(velocity + increment);
-                    }
-                    _ => {
-                        self.views
-                            .get()
-                            .position_animator()
-                            .set_anim(Anim::VelocityWithRotation {
-                                velocity: increment,
-                                rotation: 0.0,
-                                friction: constants::FRICTION,
-                            });
-                    }
-                };
-            }
-            Command::PositionTween(char_col, char_row) => {
-                let screen_center_x = self.view_width as f64 / 2.0;
-                let screen_offset_ratio_x = (char_col as f64 - screen_center_x) / screen_center_x;
+    //             match *self.views.get().position_animator().anim() {
+    //                 Anim::VelocityWithRotation { velocity, .. } => {
+    //                     self.views
+    //                         .get()
+    //                         .position_animator()
+    //                         .set_vwr_velocity(velocity + increment);
+    //                 }
+    //                 _ => {
+    //                     self.views
+    //                         .get()
+    //                         .position_animator()
+    //                         .set_anim(Anim::VelocityWithRotation {
+    //                             velocity: increment,
+    //                             rotation: 0.0,
+    //                             friction: constants::FRICTION,
+    //                         });
+    //                 }
+    //             };
+    //         }
+    //         Command::PositionTween(char_col, char_row) => {
+    //             let screen_center_x = self.view_width as f64 / 2.0;
+    //             let screen_offset_ratio_x = (char_col as f64 - screen_center_x) / screen_center_x;
 
-                // y requires extra logic:
-                let ar = self.view_width as f64 / self.view_height as f64;
-                let viewport_height = self.views.get().width_animator().value
-                    * (1.0 / ar)
-                    * (1.0 / self.views.get().specs().element_ar);
-                let screen_center_y = self.view_height as f64 / 2.0;
-                let screen_offset_ratio_y = (char_row as f64 - screen_center_y) / screen_center_y;
+    //             // y requires extra logic:
+    //             let ar = self.view_width as f64 / self.view_height as f64;
+    //             let viewport_height = self.views.get().width_animator().value
+    //                 * (1.0 / ar)
+    //                 * (1.0 / self.views.get().specs().element_ar);
+    //             let screen_center_y = self.view_height as f64 / 2.0;
+    //             let screen_offset_ratio_y = (char_row as f64 - screen_center_y) / screen_center_y;
 
-                let vp_center = Vector2f::new(
-                    self.views.get().width_animator().value / 2.0,
-                    viewport_height / 2.0,
-                );
-                let vp_center_offset = Vector2f::new(
-                    screen_offset_ratio_x * vp_center.x,
-                    screen_offset_ratio_y * vp_center.y,
-                );
+    //             let vp_center = Vector2f::new(
+    //                 self.views.get().width_animator().value / 2.0,
+    //                 viewport_height / 2.0,
+    //             );
+    //             let vp_center_offset = Vector2f::new(
+    //                 screen_offset_ratio_x * vp_center.x,
+    //                 screen_offset_ratio_y * vp_center.y,
+    //             );
 
-                let vp_center_offset =
-                    Vector2f::rotate(vp_center_offset, self.views.get().rotation_animator().value);
-                let target_x = self.views.get().position_animator().value.x + vp_center_offset.x;
-                let target_y = self.views.get().position_animator().value.y + vp_center_offset.y;
-                self.views.get().position_animator().set_anim(Anim::Target {
-                    target: Vector2f {
-                        x: target_x,
-                        y: target_y,
-                    },
-                    coefficient: constants::TARGET_COEF,
-                    epsilon: None,
-                });
-            }
-            Command::Zoom(multiplier) => {
-                let increment = constants::ZOOM_INCREMENT * multiplier;
-                let current = match self.views.get().width_animator().anim() {
-                    &Anim::ScaleVelocity { scale_velocity, .. } => scale_velocity,
-                    _ => 0.0,
-                };
-                self.views
-                    .get()
-                    .width_animator()
-                    .set_anim(Anim::ScaleVelocity {
-                        scale_velocity: current + increment,
-                        friction: constants::FRICTION,
-                        epsilon: None,
-                    });
-            }
-            Command::ZoomContinuous(multiplier) => {
-                let increment = constants::ZOOM_INCREMENT * multiplier;
-                self.views
-                    .get()
-                    .width_animator()
-                    .set_anim(Anim::ScaleVelocity {
-                        scale_velocity: increment,
-                        friction: 1.0,
-                        epsilon: None,
-                    });
-            }
-            Command::RotationalVelocity(multiplier) => {
-                let increment = constants::ROTATIONAL_VELOCITY_INCREMENT * multiplier;
-                match self.views.get().rotation_animator().anim() {
-                    &Anim::Velocity { velocity, .. } => {
-                        self.views
-                            .get()
-                            .rotation_animator()
-                            .set_velocity(velocity + increment);
-                    }
-                    _ => {
-                        self.views
-                            .get()
-                            .rotation_animator()
-                            .set_anim(Anim::Velocity {
-                                velocity: increment,
-                                friction: constants::FRICTION,
-                                epsilon: None,
-                            });
-                    }
-                }
-            }
+    //             let vp_center_offset =
+    //                 Vector2f::rotate(vp_center_offset, self.views.get().rotation_animator().value);
+    //             let target_x = self.views.get().position_animator().value.x + vp_center_offset.x;
+    //             let target_y = self.views.get().position_animator().value.y + vp_center_offset.y;
+    //             self.views.get().position_animator().set_anim(Anim::Target {
+    //                 target: Vector2f {
+    //                     x: target_x,
+    //                     y: target_y,
+    //                 },
+    //                 coefficient: constants::TARGET_COEF,
+    //                 epsilon: None,
+    //             });
+    //         }
+    //         Command::Zoom(multiplier) => {
+    //             let increment = constants::ZOOM_INCREMENT * multiplier;
+    //             let current = match self.views.get().width_animator().anim() {
+    //                 &Anim::ScaleVelocity { scale_velocity, .. } => scale_velocity,
+    //                 _ => 0.0,
+    //             };
+    //             self.views
+    //                 .get()
+    //                 .width_animator()
+    //                 .set_anim(Anim::ScaleVelocity {
+    //                     scale_velocity: current + increment,
+    //                     friction: constants::FRICTION,
+    //                     epsilon: None,
+    //                 });
+    //         }
+    //         Command::ZoomContinuous(multiplier) => {
+    //             let increment = constants::ZOOM_INCREMENT * multiplier;
+    //             self.views
+    //                 .get()
+    //                 .width_animator()
+    //                 .set_anim(Anim::ScaleVelocity {
+    //                     scale_velocity: increment,
+    //                     friction: 1.0,
+    //                     epsilon: None,
+    //                 });
+    //         }
+    //         Command::RotationalVelocity(multiplier) => {
+    //             let increment = constants::ROTATIONAL_VELOCITY_INCREMENT * multiplier;
+    //             match self.views.get().rotation_animator().anim() {
+    //                 &Anim::Velocity { velocity, .. } => {
+    //                     self.views
+    //                         .get()
+    //                         .rotation_animator()
+    //                         .set_velocity(velocity + increment);
+    //                 }
+    //                 _ => {
+    //                     self.views
+    //                         .get()
+    //                         .rotation_animator()
+    //                         .set_anim(Anim::Velocity {
+    //                             velocity: increment,
+    //                             friction: constants::FRICTION,
+    //                             epsilon: None,
+    //                         });
+    //                 }
+    //             }
+    //         }
 
-            Command::Stop => {
-                self.stop_view_anims();
-            }
+    //         Command::Stop => {
+    //             self.stop_view_anims();
+    //         }
 
-            Command::Reset => {
-                self.views.get().anim_to_home();
-            }
-            Command::AutoExposure => {
-                self.views.get().toggle_use_exposure();
+    //         Command::Reset => {
+    //             self.views.get().anim_to_home();
+    //         }
+    //         Command::AutoExposure => {
+    //             self.views.get().toggle_use_exposure();
 
-                let s = if self.views.get().use_exposure() {
-                    "[E] Auto-exposure on"
-                } else {
-                    "[E] Auto-exposure off"
-                };
-                self.show_feedback(s.to_string());
-            }
+    //             let s = if self.views.get().use_exposure() {
+    //                 "[E] Auto-exposure on"
+    //             } else {
+    //                 "[E] Auto-exposure off"
+    //             };
+    //             self.show_feedback(s.to_string());
+    //         }
 
-            Command::Size(w, h) => {
-                self.set_size(w, h);
-            }
+    //         Command::Size(w, h) => {
+    //             self.set_size(w, h);
+    //         }
 
-            Command::Help => {
-                if self.help_anim.value > 0.0 {
-                    self.has_shown_help = true;
-                    self.anim_in_help_dialog();
-                } else {
-                    self.anim_out_help_dialog();
-                }
-            }
+    //         Command::Help => {
+    //             if self.help_anim.value > 0.0 {
+    //                 self.has_shown_help = true;
+    //                 self.anim_in_help_dialog();
+    //             } else {
+    //                 self.anim_out_help_dialog();
+    //             }
+    //         }
 
-            Command::ChangeFractalSet => {
-                self.stop_view_anims();
-                self.interview_last_index = self.views.index;
-                self.views.index += 1;
-                if self.views.index >= self.views.vec.len() {
-                    self.views.index = 0;
-                }
-                self.interview_animator.value = 0.0;
-                self.interview_animator.set_anim(Anim::Velocity {
-                    velocity: 1.0 / 20.0,
-                    friction: 1.0,
-                    epsilon: None,
-                });
+    //         Command::ChangeFractalSet => {
+    //             self.stop_view_anims();
+    //             self.interview_last_index = self.views.index;
+    //             self.views.index += 1;
+    //             if self.views.index >= self.views.vec.len() {
+    //                 self.views.index = 0;
+    //             }
+    //             self.interview_animator.value = 0.0;
+    //             self.interview_animator.set_anim(Anim::Velocity {
+    //                 velocity: 1.0 / 20.0,
+    //                 friction: 1.0,
+    //                 epsilon: None,
+    //             });
 
-                let s = match self.views.get().specs().fractal_type {
-                    FractalType::Mandelbrot => "[F] Fractal type: Mandelbrot",
-                    FractalType::Julia(..) => "[F] Fractal type: Julia",
-                };
-                self.show_feedback(s.to_string());
-            }
-            _ => {}
-        }
-    }
+    //             let s = match self.views.get().specs().fractal_type {
+    //                 FractalType::Mandelbrot => "[F] Fractal type: Mandelbrot",
+    //                 FractalType::Julia(..) => "[F] Fractal type: Julia",
+    //             };
+    //             self.show_feedback(s.to_string());
+    //         }
+    //         _ => {}
+    //     }
+    // }
 
     fn stop_view_anims(&mut self) {
         self.views.get().position_animator().set_anim(Anim::None);

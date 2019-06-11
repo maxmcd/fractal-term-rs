@@ -81,7 +81,7 @@ impl<'a> TextBuffer<'a> {
                 let s1 = format!("{:.*}", 8, c.re);
                 let s2 = format!("{:.*}i", 8, c.im);
                 s = format!("   c: {} {}", s1, s2);
-                self.draw_string(&s, (x + 2), y);
+                self.draw_string(&s, x + 2, y);
             }
             None => {}
         }
@@ -93,7 +93,7 @@ impl<'a> TextBuffer<'a> {
         } else {
             s = "   x: ".to_string() + &s;
         }
-        self.draw_string(&s, (x + 2), (y + 1));
+        self.draw_string(&s, x + 2, y + 1);
 
         // position y
         let mut s = format!("{:.*}", 17, vp_pos.y);
@@ -102,11 +102,11 @@ impl<'a> TextBuffer<'a> {
         } else {
             s = "   y: ".to_string() + &s;
         }
-        self.draw_string(&s, (x + 2), (y + 2));
+        self.draw_string(&s, x + 2, y + 2);
 
         // zoom
         s = format!("zoom:  {:.0}x", zoom);
-        self.draw_string(&s, (x + 2), (y + 3));
+        self.draw_string(&s, x + 2, y + 3);
     }
 
     /**

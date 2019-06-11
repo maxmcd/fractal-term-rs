@@ -1,4 +1,3 @@
-extern crate rustbox;
 mod fract;
 mod leelib;
 

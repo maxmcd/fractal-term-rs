@@ -1,5 +1,5 @@
 use leelib::vector2::Vector2f;
-use std::ops::{Add, Mul};
+use std::ops::{Add};
 
 /**
  * Used to animate a value thru successive calls to "update()"

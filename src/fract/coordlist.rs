@@ -19,11 +19,11 @@ impl<T: Clone> CoordList<T> {
         self.coordlist.len()
     }
 
-    pub fn set(&self, index: usize, coord: T) {
+    pub fn set(&self, _index: usize, _coord: T) {
         // TODO
     }
 
-    pub fn clear(index: usize) {
+    pub fn clear(_index: usize) {
         // TODO
     }
 
@@ -127,7 +127,7 @@ impl CoordList<Complex64> {
             Ok(val) => re = val,
         }
 
-        let mut im;
+        let im;
         let result = v[1].trim().parse::<f64>();
         match result {
             Err(_) => return None,
